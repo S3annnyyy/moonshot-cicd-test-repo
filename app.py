@@ -22,9 +22,10 @@ async def conversation():
 if __name__ == "__main__":
     app.run(port=3123)
 
-# For local testing
+# For local testing in powershell
 '''
-curl -X http:localhost:3123/api/v1/conversation \
-     -H "Content-Type": application/json \
-     -d '{"message": "I want to find out more about the technology sector"}'
+Invoke-WebRequest -Uri http://localhost:3123/api/v1/conversation `
+                  -Method POST `
+                  -Headers @{ "Content-Type" = "application/json" } `
+                  -Body '{ "message": "I want to find out more about the technology sector" }'
 '''

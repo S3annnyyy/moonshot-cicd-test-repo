@@ -1,0 +1,52 @@
+name: Moonshot Testing
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+  packages: read
+
+jobs:
+  authenticate_azure_services:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout/v4
+
+      - name: Log into Azure Container Registry
+        uses: docker/login-action@v3
+        with: 
+          registry: moonshottestacr-e6exdsash3aeakef.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}   
+          password: ${{ secrets.ACR_PASSWORD }} 
+  
+  run-moonshot-in-ci:
+    runs-on: ubuntu-latest
+    environment: dev
+    needs: authenticate_azure_services
+    container:
+      image: moonshottestacr-e6exdsash3aeakef.azurecr.io/moonshot:latest
+      credentials:
+        username: ${{ secrets.ACR_USERNAME }}   
+        password: ${{ secrets.ACR_PASSWORD }} 
+    steps:
+      - name: Run Moonshot 
+        run: |
+          cd /app
+          export OPENAI_API_KEY="${{ secrets.OPENAI_TOKEN }}"
+          export MS_TEST_CONFIG_PATH="https://moonshotblobstorage.blob.core.windows.net/test/tests.yml"
+          export MS_CONFIG_PATH="https://moonshotblobstorage.blob.core.windows.net/test/moonshot_config.yml"
+
+          moonshot run my-run-1 qa-tests my-gpt-4o-mini
+      
+      - name: Upload Moonshot Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: /app/data/results/*  
+        
