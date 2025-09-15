@@ -39,6 +39,7 @@ jobs:
         run: |
           cd /app
           export OPENAI_API_KEY="${{ secrets.OPENAI_TOKEN }}"
+          export AZURE_BLOB_STORAGE_URL=${{ secrets.AZURE_BLOB_STORAGE_URL }}
           export MS_TEST_CONFIG_PATH="https://moonshotblobstorage.blob.core.windows.net/test/tests.yml"
           export MS_CONFIG_PATH="https://moonshotblobstorage.blob.core.windows.net/test/moonshot_config.yml"
 
