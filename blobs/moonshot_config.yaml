@@ -4,16 +4,20 @@ common:
   max_calls_per_minute: 60
   max_attempts: 3
 
-# These are the configurations for your endpoints
-# Each endpoint has its own endpoint_id (e.g., my-gpt-4o, my-gpt-4o-mini, my-gpt-o1, my-gpt-o1-mini)
+# ! ---------------------------------------------------------------------------------------------
+# ! CONFIGURATION FOR ENDPOINTS
+# ! Each endpoint has its own endpoint_id
+# ! ---------------------------------------------------------------------------------------------
 connectors_configurations:
   - name: my-gpt-4o-mini
     connector_adapter: openai_adapter
     model: gpt-4o-mini
 
-# These are the configurations for the attack modules
+# ---------------------------------------------------------------------------------------------
+# CONFIGURATIONS FOR ATTACK MODULES
 # Each attack module utilizes a prompt generator LLM to generate prompts for the attack
 # The default prompt generator LLM is OpenAI's gpt-4o
+# ---------------------------------------------------------------------------------------------
 attack_modules:
   - name: hallucination
     connector_configurations:
@@ -31,9 +35,11 @@ attack_modules:
         connector_adapter: openai_adapter
         model: gpt-4o    
 
-# These are the configurations for the evaluation metrics
-# Some evaluation metrics (e.g., refusal_adapter) utilizes a LLM as a Judge to evaluate the endpoint's responses
+# ---------------------------------------------------------------------------------------------
+# CONFIGURATIONS FOR EVALUATION METRICS
+# Some eval metrics (e.g., refusal_adapter) utilizes LLMAsAJudge to evaluate the endpoint's responses
 # The default judge LLM is OpenAI's gpt-4o
+# ---------------------------------------------------------------------------------------------
 metrics:
   - name: refusal_adapter
     connector_configurations:
