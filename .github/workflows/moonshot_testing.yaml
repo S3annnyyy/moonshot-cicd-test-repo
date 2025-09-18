@@ -20,6 +20,9 @@ jobs:
         username: ${{ secrets.ACR_USERNAME }}   
         password: ${{ secrets.ACR_PASSWORD }} 
     steps:
+      - name: Set RUN_ID
+        run: echo "RUN_ID=moonshot-testing-run-$(date +'%m%d%y-%H%M')" >> $GITHUB_ENV
+
       - name: Run Moonshot 
         run: |
           cd /app
@@ -31,10 +34,19 @@ jobs:
           export MS_TEST_CONFIG_PATH="${{ secrets.AZURE_MS_TEST_CONFIG_PATH }}"
           export MS_CONFIG_PATH="${{ secrets.AZURE_MS_CONFIG_PATH }}"
 
-          moonshot run my-run-1 qa-tests my-gpt-4o-mini
+          moonshot run "$RUN_ID" qa-tests my-gpt-4o-mini
       
       - name: Copy Results
         run: cp -r /app/data/results $GITHUB_WORKSPACE/results
+      
+      - name: Show results
+        run: |
+          if [ -f "$GITHUB_WORKSPACE/results/$RUN_ID.json" ]; then
+            cat "$GITHUB_WORKSPACE/results/$RUN_ID.json"
+          else
+            echo "File not found: $GITHUB_WORKSPACE/results/$RUN_ID.json"
+            ls -l "$GITHUB_WORKSPACE/results"
+          fi
       
       - name: Upload Moonshot Results
         uses: actions/upload-artifact@v4
