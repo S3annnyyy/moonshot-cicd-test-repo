@@ -51,6 +51,9 @@ jobs:
           cd /app
           export OPENAI_API_KEY="${{ secrets.OPENAI_TOKEN }}"
           export AZURE_BLOB_STORAGE_URL=${{ secrets.AZURE_BLOB_STORAGE_URL }}
+          export AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}
+          export AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}
+          export AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}
           export MS_TEST_CONFIG_PATH="${{ secrets.AZURE_MS_TEST_CONFIG_PATH }}"
           export MS_CONFIG_PATH="${{ secrets.AZURE_MS_CONFIG_PATH }}"
 
