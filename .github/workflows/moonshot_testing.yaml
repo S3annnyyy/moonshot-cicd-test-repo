@@ -28,8 +28,8 @@ jobs:
           export AZURE_CLIENT_ID="${{ secrets.AZURE_CLIENT_ID }}"
           export AZURE_TENANT_ID="${{ secrets.AZURE_TENANT_ID }}"
           export AZURE_CLIENT_SECRET="${{ secrets.AZURE_CLIENT_SECRET }}"
-          export MS_TEST_CONFIG_PATH=""${{ secrets.AZURE_MS_TEST_CONFIG_PATH }}"
-          export MS_CONFIG_PATH=""${{ secrets.AZURE_MS_CONFIG_PATH }}"
+          export MS_TEST_CONFIG_PATH="${{ secrets.AZURE_MS_TEST_CONFIG_PATH }}"
+          export MS_CONFIG_PATH="${{ secrets.AZURE_MS_CONFIG_PATH }}"
 
           moonshot run my-run-1 qa-tests my-gpt-4o-mini
       
