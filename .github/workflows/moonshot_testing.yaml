@@ -39,7 +39,6 @@ jobs:
   run-moonshot-in-ci:
     runs-on: ubuntu-latest
     environment: dev
-    needs: authenticate_azure_services
     container:
       image: moonshotseanyctest-czgbd0c4dadjgmg2.azurecr.io/moonshot:latest
       credentials:
