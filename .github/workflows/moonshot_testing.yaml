@@ -20,7 +20,7 @@ jobs:
 
       - name: Build quart Docker container
         run: |
-          docker build -t quart-app ./app
+          docker build -t quart-app .
 
       - name: Run quart container
         run: |
