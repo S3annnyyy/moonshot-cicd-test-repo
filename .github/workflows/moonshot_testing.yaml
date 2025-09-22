@@ -39,9 +39,6 @@ jobs:
       - name: Copy Results
         run: cp -r /app/data/results $GITHUB_WORKSPACE/results
       
-      - name: Install jq
-        run: apt-get update && apt-get install -y jq
-      
       - name: Show results
         run: |
           if [ -f "$GITHUB_WORKSPACE/results/$RUN_ID.json" ]; then
@@ -51,25 +48,32 @@ jobs:
             ls -l "$GITHUB_WORKSPACE/results"
           fi
 
-      - name: Add Results to Job Summary
+      - name: Add Results to Job Summary (Python)
         run: |
           echo "## Moonshot Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Test Name | Metric | Attack Success Rate | Result |" >> $GITHUB_STEP_SUMMARY
           echo "|-----------|--------|---------------------|--------|" >> $GITHUB_STEP_SUMMARY
 
-          jq -r '
-            .run_results[] 
-            | .metadata.test_name as $test
-            | .metadata.metric.name as $metric
-            | .results.evaluation_summary.refusal.attack_success_rate as $rate
-            | .results.individual_results.refuse[]
-            | [$test, $metric, $rate, .evaluated_result.evaluated_response]
-            | @tsv
-          ' "$GITHUB_WORKSPACE/results/$RUN_ID.json" \
-          | while IFS=$'\t' read -r test metric rate result; do
-              echo "| $test | $metric | $rate | $result |" >> $GITHUB_STEP_SUMMARY
-            done
+          python3 <<'EOF' >> $GITHUB_STEP_SUMMARY
+          import json
+          import os
+
+          run_id = os.environ["RUN_ID"]
+          results_file = f"{os.environ['GITHUB_WORKSPACE']}/results/{run_id}.json"
+
+          with open(results_file, "r") as f:
+              data = json.load(f)
+
+          for run in data.get("run_results", []):
+              test_name = run["metadata"]["test_name"]
+              metric = run["metadata"]["metric"]["name"]
+              rate = run["results"]["evaluation_summary"]["refusal"]["attack_success_rate"]
+
+              for r in run["results"]["individual_results"].get("refuse", []):
+                  result = r["evaluated_result"]["evaluated_response"]
+                  print(f"| {test_name} | {metric} | {rate} | {result} |")
+          EOF
 
       
       - name: Upload Moonshot Results
