@@ -61,7 +61,7 @@ jobs:
             -e MS_TEST_CONFIG_PATH="${{ secrets.AZURE_MS_TEST_CONFIG_PATH }}" \
             -e MS_CONFIG_PATH="${{ secrets.AZURE_MS_CONFIG_PATH }}" \
             -e RUN_ID="$RUN_ID" \
-            -p 3123:3123 \
+            -p 8000:8000 \
             moonshotseanyctest-czgbd0c4dadjgmg2.azurecr.io/moonshot:latest \
             sh -c "cd /app && moonshot run \"$RUN_ID\" qa-tests my-custom-connector"
 
