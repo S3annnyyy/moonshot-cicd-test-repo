@@ -39,6 +39,9 @@ jobs:
       - name: Copy Results
         run: cp -r /app/data/results $GITHUB_WORKSPACE/results
       
+      - name: Install jq
+        run: apt-get update && apt-get install -y jq
+      
       - name: Show results
         run: |
           if [ -f "$GITHUB_WORKSPACE/results/$RUN_ID.json" ]; then
@@ -47,7 +50,7 @@ jobs:
             echo "File not found: $GITHUB_WORKSPACE/results/$RUN_ID.json"
             ls -l "$GITHUB_WORKSPACE/results"
           fi
-          
+
       - name: Add Results to Job Summary
         run: |
           echo "## Moonshot Test Results" >> $GITHUB_STEP_SUMMARY
