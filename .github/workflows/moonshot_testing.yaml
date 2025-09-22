@@ -43,6 +43,11 @@ jobs:
       - name: Set RUN_ID
         run: echo "RUN_ID=moonshot-testing-run-$(date +'%m%d%y-%H%M')" >> $GITHUB_ENV
 
+      - name: Login to Azure Container Registry
+        run: |
+          echo "${{ secrets.ACR_PASSWORD }}" | docker login moonshotseanyctest-czgbd0c4dadjgmg2.azurecr.io \
+            --username ${{ secrets.ACR_USERNAME }} --password-stdin
+
       # 5. Run Moonshot inside its container
       - name: Run Moonshot in Docker container
         run: |
