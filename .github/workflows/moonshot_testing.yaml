@@ -41,6 +41,7 @@ jobs:
 
   run-moonshot-in-ci:
     runs-on: ubuntu-latest
+    needs: setup-quart-localhost-sever
     environment: dev
     container:
       image: moonshotseanyctest-czgbd0c4dadjgmg2.azurecr.io/moonshot:latest
