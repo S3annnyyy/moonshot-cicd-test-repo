@@ -20,7 +20,7 @@ async def conversation():
 
 
 if __name__ == "__main__":
-    app.run(port=3123)
+    app.run(host="0.0.0.0", port=3123)
 
 # For local testing in powershell
 '''
