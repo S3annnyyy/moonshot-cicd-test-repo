@@ -47,6 +47,27 @@ jobs:
             echo "File not found: $GITHUB_WORKSPACE/results/$RUN_ID.json"
             ls -l "$GITHUB_WORKSPACE/results"
           fi
+          
+      - name: Add Results to Job Summary
+        run: |
+          echo "## Moonshot Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Name | Metric | Attack Success Rate | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|---------------------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          jq -r '
+            .run_results[] 
+            | .metadata.test_name as $test
+            | .metadata.metric.name as $metric
+            | .results.evaluation_summary.refusal.attack_success_rate as $rate
+            | .results.individual_results.refuse[]
+            | [$test, $metric, $rate, .evaluated_result.evaluated_response]
+            | @tsv
+          ' "$GITHUB_WORKSPACE/results/$RUN_ID.json" \
+          | while IFS=$'\t' read -r test metric rate result; do
+              echo "| $test | $metric | $rate | $result |" >> $GITHUB_STEP_SUMMARY
+            done
+
       
       - name: Upload Moonshot Results
         uses: actions/upload-artifact@v4
