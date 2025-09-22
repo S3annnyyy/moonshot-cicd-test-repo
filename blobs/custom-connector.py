@@ -11,16 +11,6 @@ from domain.services.logger import configure_logger
 # Initialize a logger for this module
 logger = configure_logger(__name__)
 
-# This is a sample connector template to refer to for creating your own custom connector
-# To test this connector, we will require the Python file examples/sample_llm_application/sample_llm_application.py.
-# Refer to sample_llm_application.py for more information.
-
-# How to use this sample to make your own connector:
-#       Step 1 - Make a copy of this file and put it in your S3.
-#       Step 2 - Change the file name and the class name to what you want.
-#       Step 3 - Look for TODOs in this file, and modify the code according to what your LLM application needs.
-#       Step 4 - Update moonshot_config.yaml or your own Moonshot config file to include your new connector.
-#                Refer to our moonshot_config.yaml template for sample.
 
 class SampleCustomAdapter(ConnectorPort):
     """
@@ -45,12 +35,8 @@ class SampleCustomAdapter(ConnectorPort):
         self.install_requirements()
 
     async def get_response(self, prompt: Any) -> ConnectorResponseEntity:
-        # TODO 2: Input the endpoint to your LLM application.
-        endpoint = ""
-
-        # TODO 3: Prepare the data to be sent in the request. The format of the data should match what you are
-        # expecting in your application endpoint. Replace with the format you are expecting
-        data = {"input_prompt": prompt}
+        endpoint = "http://localhost:3123/api/v1/conversation"
+        data = {"message": prompt}
 
         # TODO 4: After preparing the data, send the request to the endpoint. Ensure that you return a
         # ConnectorResponseEntity object (line 66), and ensure the ConnectorResponseEntity's response field is assigned 
@@ -61,7 +47,7 @@ class SampleCustomAdapter(ConnectorPort):
                 response = await client.post(endpoint, json=data)
                 response.raise_for_status()
                 response_data = response.json()
-                return ConnectorResponseEntity(response=response_data["response"])
+                return ConnectorResponseEntity(response=response_data["data"])
             except Exception as e:
                 logger.error(f"{self.ERROR_PROCESSING_PROMPT} {e}")
                 raise e
@@ -76,8 +62,6 @@ class SampleCustomAdapter(ConnectorPort):
         Raises:
             subprocess.CalledProcessError: If the installation of any package fails.
         """
-        # TODO 5 (Optional): If your custom connector has dependencies, add them into the list below. We will attempt
-        # to install and import the packages. In this example, our dependency is the library 'httpx'.
         dependencies = ["httpx"]
         for dependency in dependencies:
             try:

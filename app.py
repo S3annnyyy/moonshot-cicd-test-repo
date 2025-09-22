@@ -27,5 +27,5 @@ if __name__ == "__main__":
 Invoke-WebRequest -Uri http://localhost:3123/api/v1/conversation `
                   -Method POST `
                   -Headers @{ "Content-Type" = "application/json" } `
-                  -Body '{ "message": "I want to find out more about the technology sector" }'
+                  -Body '{ "message": "This response is from the quart application" }'
 '''
