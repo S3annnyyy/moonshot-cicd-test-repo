@@ -14,55 +14,57 @@ jobs:
   run-moonshot-in-ci:
     runs-on: ubuntu-latest
     environment: dev
-    container:
-      image: moonshotseanyctest-czgbd0c4dadjgmg2.azurecr.io/moonshot:latest
-      credentials:
-        username: ${{ secrets.ACR_USERNAME }}   
-        password: ${{ secrets.ACR_PASSWORD }} 
     steps:
-      - name: Set RUN_ID
-        run: echo "RUN_ID=moonshot-testing-run-$(date +'%m%d%y-%H%M')" >> $GITHUB_ENV
-
+      # 1. Checkout the repo
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Build quart Docker container
-        run: |
-          docker build -t quart-app .
+      # 2. Build and start Quart container
+      - name: Build Quart Docker container
+        run: docker build -t quart-app .
 
-      - name: Run quart container
+      - name: Run Quart container
         run: |
           docker run -d --name quart-app -p 3123:3123 quart-app
           echo "quart container started"
 
-      - name: Wait for health check and set quart URL
-        id: set_url
+      # 3. Wait for Quart to be ready
+      - name: Wait for Quart health check
         run: |
           for i in {1..10}; do
             if curl -s -f http://localhost:3123/; then
-              echo "quart ready"
+              echo "Quart ready"
               break
             fi
             sleep 2
           done
-          echo "quart_url=http://localhost:3123" >> $GITHUB_OUTPUT
-      
-      - name: Run Moonshot 
-        run: |
-          cd /app
-          export OPENAI_API_KEY="${{ secrets.OPENAI_TOKEN }}"
-          export AZURE_BLOB_STORAGE_URL="${{ secrets.AZURE_BLOB_STORAGE_URL }}"
-          export AZURE_CLIENT_ID="${{ secrets.AZURE_CLIENT_ID }}"
-          export AZURE_TENANT_ID="${{ secrets.AZURE_TENANT_ID }}"
-          export AZURE_CLIENT_SECRET="${{ secrets.AZURE_CLIENT_SECRET }}"
-          export MS_TEST_CONFIG_PATH="${{ secrets.AZURE_MS_TEST_CONFIG_PATH }}"
-          export MS_CONFIG_PATH="${{ secrets.AZURE_MS_CONFIG_PATH }}"
 
-          moonshot run "$RUN_ID" qa-tests my-custom-connector
-      
+      # 4. Set RUN_ID
+      - name: Set RUN_ID
+        run: echo "RUN_ID=moonshot-testing-run-$(date +'%m%d%y-%H%M')" >> $GITHUB_ENV
+
+      # 5. Run Moonshot inside its container
+      - name: Run Moonshot in Docker container
+        run: |
+          docker run --rm \
+            -v $GITHUB_WORKSPACE:/app \
+            -e OPENAI_API_KEY="${{ secrets.OPENAI_TOKEN }}" \
+            -e AZURE_BLOB_STORAGE_URL="${{ secrets.AZURE_BLOB_STORAGE_URL }}" \
+            -e AZURE_CLIENT_ID="${{ secrets.AZURE_CLIENT_ID }}" \
+            -e AZURE_TENANT_ID="${{ secrets.AZURE_TENANT_ID }}" \
+            -e AZURE_CLIENT_SECRET="${{ secrets.AZURE_CLIENT_SECRET }}" \
+            -e MS_TEST_CONFIG_PATH="${{ secrets.AZURE_MS_TEST_CONFIG_PATH }}" \
+            -e MS_CONFIG_PATH="${{ secrets.AZURE_MS_CONFIG_PATH }}" \
+            -e RUN_ID="$RUN_ID" \
+            -p 3123:3123 \
+            moonshotseanyctest-czgbd0c4dadjgmg2.azurecr.io/moonshot:latest \
+            bash -c "cd /app && moonshot run \"$RUN_ID\" qa-tests my-custom-connector"
+
+      # 6. Copy results
       - name: Copy Results
-        run: cp -r /app/data/results $GITHUB_WORKSPACE/results
-      
+        run: cp -r $GITHUB_WORKSPACE/data/results $GITHUB_WORKSPACE/results
+
+      # 7. Show results
       - name: Show results
         run: |
           if [ -f "$GITHUB_WORKSPACE/results/$RUN_ID.json" ]; then
@@ -72,6 +74,7 @@ jobs:
             ls -l "$GITHUB_WORKSPACE/results"
           fi
 
+      # 8. Add results to job summary
       - name: Add Results to Job Summary (Python)
         run: |
           echo "## Moonshot Test Results" >> $GITHUB_STEP_SUMMARY
@@ -99,10 +102,9 @@ jobs:
                   print(f"| {test_name} | {metric} | {rate} | {result} |")
           EOF
 
-      
+      # 9. Upload results
       - name: Upload Moonshot Results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: /app/data/results/*  
-        
+          path: $GITHUB_WORKSPACE/data/results/*
