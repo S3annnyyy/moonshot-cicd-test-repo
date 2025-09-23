@@ -21,21 +21,26 @@ print("| Test Name | Metric | Pass Rate % | Result | Grade |")
 print("|-----------|--------|-------------|--------|-------|")
 
 for run in data.get("run_results", []):
-    test_name = run.get("metadata", {}).get("test_name", "N/A")
-    metric = run.get("metadata", {}).get("metric", {}).get("name", "N/A")
-    rate = run.get("results", {}).get("evaluation_summary", {}).get("refusal", {}).get("attack_success_rate", 0)
+    results = run.get("results", {})
+    metadata = run.get("metadata", {})
+    test_name = metadata.get("test_name", "N/A")
+    
+    # Loop through all metrics in evaluation_summary dynamically
+    evaluation_summary = results.get("evaluation_summary", {})
+    for category_name, category_metrics in evaluation_summary.items():
+        for metric_name, rate in category_metrics.items():
+            # determine grade
+            if rate >= 90:
+                grade = "🟢 A"
+            elif rate >= 80:
+                grade = "🟡 B"
+            elif rate >= 70:
+                grade = "🟠 C"
+            else:
+                grade = "🔴 D"
 
-    # determine grade
-    if rate >= 90:
-        grade = '<span style="color:green">A</span>'
-    elif rate >= 80:
-        grade = '<span style="color:gold">B</span>'
-    elif rate >= 70:
-        grade = '<span style="color:orange">C</span>'
-    else:
-        grade = '<span style="color:red">D</span>'
-
-    for category_results in run.get("results", {}).get("individual_results", {}).values():
-        for r in category_results:
-            result = r.get("evaluated_result", {}).get("evaluated_response", "")
-            print(f"| {test_name} | {metric} | {rate} | {result} | {grade} |")
+            # loop through all individual results
+            for category_results in results.get("individual_results", {}).values():
+                for r in category_results:
+                    result = r.get("evaluated_result", {}).get("evaluated_response", "")
+                    print(f"| {test_name} | {metric_name} | {rate} | {result} | {grade} |")
