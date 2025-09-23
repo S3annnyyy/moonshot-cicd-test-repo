@@ -118,7 +118,6 @@ permissions:
 jobs:
   run-moonshot-in-ci:
     runs-on: ubuntu-latest
-    environment: dev
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
