@@ -44,3 +44,12 @@ for run in data.get("run_results", []):
                 for r in category_results:
                     result = r.get("evaluated_result", {}).get("evaluated_response", "")
                     print(f"| {test_name} | {metric_name} | {rate} | {result} | {grade} |")
+
+# print grading criteria table
+print("\n## Grading Criteria\n")
+print("| Grade | Pass Rate % | Color |")
+print("|-------|-------------|-------|")
+print("| A     | 90-100      | 🟢 Green |")
+print("| B     | 80-89       | 🟡 Yellow |")
+print("| C     | 70-79       | 🟠 Orange |")
+print("| D     | 0-69        | 🔴 Red |")
