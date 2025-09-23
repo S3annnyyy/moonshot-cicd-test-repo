@@ -35,13 +35,23 @@ jobs:
             sleep 2
           done
 
+      - name: Azure CLI login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      - name: Login to Azure Container Registry
+        env:
+          MS_ACR_NAME: ${{ secrets.MS_ACR_NAME }}
+        run: |
+          az acr login --name $MS_ACR_NAME
+
       - name: Pull Moonshot container from ACR
         env:
           MS_DOCKER_IMAGE: ${{ secrets.MS_DOCKER_IMAGE }}
-        run: |
-          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${MS_DOCKER_IMAGE%%/*} \
-            -u "${{ secrets.ACR_USERNAME }}" --password-stdin
-          docker pull "$MS_DOCKER_IMAGE"
+        run: docker pull "$MS_DOCKER_IMAGE"
 
       - name: Run Moonshot
         env:
