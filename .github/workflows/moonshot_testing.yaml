@@ -11,13 +11,12 @@ permissions:
   packages: read
 
 jobs:
-  moonshot-test:
+  run-moonshot-in-ci:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # --- Quart setup ---
       - name: Build Quart Docker image
         run: docker build -t quart-app:latest .
 
@@ -26,7 +25,7 @@ jobs:
           docker run -d --name quart-app -p 3123:3123 quart-app:latest
           echo "Quart container started"
 
-      - name: Wait for Quart to be ready
+      - name: Wait for Quart server to be up
         run: |
           for i in {1..10}; do
             if curl -s -f http://localhost:3123/; then
@@ -36,12 +35,13 @@ jobs:
             sleep 2
           done
 
-      # --- Moonshot test run ---
-      - name: Pull Moonshot container
+      - name: Pull Moonshot container from ACR
+        env:
+          MS_DOCKER_IMAGE: ${{ secrets.MS_DOCKER_IMAGE }}
         run: |
-          echo "${{ secrets.ACR_PASSWORD }}" | docker login moonshotseanyctest-czgbd0c4dadjgmg2.azurecr.io \
+          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${MS_DOCKER_IMAGE%%/*} \
             -u "${{ secrets.ACR_USERNAME }}" --password-stdin
-          docker pull moonshotseanyctest-czgbd0c4dadjgmg2.azurecr.io/moonshot:latest
+          docker pull "$MS_DOCKER_IMAGE"
 
       - name: Run Moonshot
         env:
@@ -52,6 +52,7 @@ jobs:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           MS_TEST_CONFIG_PATH: ${{ secrets.AZURE_MS_TEST_CONFIG_PATH }}
           MS_CONFIG_PATH: ${{ secrets.AZURE_MS_CONFIG_PATH }}
+          MS_DOCKER_IMAGE: ${{ secrets.MS_DOCKER_IMAGE }}
         run: |
           RUN_ID="moonshot-testing-run-$(date +'%m%d%y-%H%M')"
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
@@ -67,11 +68,10 @@ jobs:
             -e MS_CONFIG_PATH \
             -e RUN_ID \
             -v $GITHUB_WORKSPACE/results:/app/data/results \
-            moonshotseanyctest-czgbd0c4dadjgmg2.azurecr.io/moonshot:latest \
+            "$MS_DOCKER_IMAGE" \
             moonshot run "$RUN_ID" qa-tests my-custom-connector
 
-      # --- Results handling ---
-      - name: Show results
+      - name: Show result logs
         run: |
           if [ -f "$GITHUB_WORKSPACE/results/$RUN_ID.json" ]; then
             cat "$GITHUB_WORKSPACE/results/$RUN_ID.json"
@@ -80,142 +80,14 @@ jobs:
             ls -l "$GITHUB_WORKSPACE/results"
           fi
 
-      - name: Add Results to Job Summary (Python)
-        run: |
-          echo "## Moonshot Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Test Name | Metric | Pass Rate % | Result |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----------|--------|-------------|--------|" >> $GITHUB_STEP_SUMMARY
-
-          python3 <<'EOF' >> $GITHUB_STEP_SUMMARY
-          import json, os
-          run_id = os.environ["RUN_ID"]
-          results_file = f"{os.environ['GITHUB_WORKSPACE']}/results/{run_id}.json"
-          with open(results_file, "r") as f:
-              data = json.load(f)
-          for run in data.get("run_results", []):
-              test_name = run["metadata"]["test_name"]
-              metric = run["metadata"]["metric"]["name"]
-              rate = run["results"]["evaluation_summary"]["refusal"]["attack_success_rate"]
-              for r in run["results"]["individual_results"].get("refuse", []):
-                  result = r["evaluated_result"]["evaluated_response"]
-                  print(f"| {test_name} | {metric} | {rate} | {result} |")
-          EOF
+      - name: Summarize test results
+        run: python3 .github/scripts/summarize_results.py >> $GITHUB_STEP_SUMMARY
+        env:
+          RUN_ID: ${{ env.RUN_ID }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
 
       - name: Upload Moonshot Results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: results/*
-
-# name: Moonshot Testing
-
-# on:
-#   push:
-#     branches:
-#       - main
-
-# permissions:
-#   id-token: write
-#   contents: read
-#   packages: read
-
-# jobs:
-#   setup-quart-localhost-sever:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout repo
-#         uses: actions/checkout@v4
-
-#       - name: Build quart Docker container
-#         run: |
-#           docker build -t quart-app .
-
-#       - name: Run quart container
-#         run: |
-#           docker run -d --name quart-app -p 3123:3123 quart-app
-#           echo "quart container started"
-
-#       - name: Wait for health check and set quart URL
-#         id: set_url
-#         run: |
-#           for i in {1..10}; do
-#             if curl -s -f http://localhost:3123/; then
-#               echo "quart ready"
-#               break
-#             fi
-#             sleep 2
-#           done
-#           echo "quart_url=http://localhost:3123" >> $GITHUB_OUTPUT
-
-#   run-moonshot-in-ci:
-#     runs-on: ubuntu-latest
-#     environment: dev
-#     container:
-#       image: moonshotseanyctest-czgbd0c4dadjgmg2.azurecr.io/moonshot:latest
-#       credentials:
-#         username: ${{ secrets.ACR_USERNAME }}   
-#         password: ${{ secrets.ACR_PASSWORD }} 
-#     steps:
-#       - name: Set RUN_ID
-#         run: echo "RUN_ID=moonshot-testing-run-$(date +'%m%d%y-%H%M')" >> $GITHUB_ENV
-
-#       - name: Run Moonshot 
-#         run: |
-#           cd /app
-#           export OPENAI_API_KEY="${{ secrets.OPENAI_TOKEN }}"
-#           export AZURE_BLOB_STORAGE_URL="${{ secrets.AZURE_BLOB_STORAGE_URL }}"
-#           export AZURE_CLIENT_ID="${{ secrets.AZURE_CLIENT_ID }}"
-#           export AZURE_TENANT_ID="${{ secrets.AZURE_TENANT_ID }}"
-#           export AZURE_CLIENT_SECRET="${{ secrets.AZURE_CLIENT_SECRET }}"
-#           export MS_TEST_CONFIG_PATH="${{ secrets.AZURE_MS_TEST_CONFIG_PATH }}"
-#           export MS_CONFIG_PATH="${{ secrets.AZURE_MS_CONFIG_PATH }}"
-
-#           moonshot run "$RUN_ID" qa-tests my-custom-connector
-      
-#       - name: Copy Results
-#         run: cp -r /app/data/results $GITHUB_WORKSPACE/results
-      
-#       - name: Show results
-#         run: |
-#           if [ -f "$GITHUB_WORKSPACE/results/$RUN_ID.json" ]; then
-#             cat "$GITHUB_WORKSPACE/results/$RUN_ID.json"
-#           else
-#             echo "File not found: $GITHUB_WORKSPACE/results/$RUN_ID.json"
-#             ls -l "$GITHUB_WORKSPACE/results"
-#           fi
-
-#       - name: Add Results to Job Summary (Python)
-#         run: |
-#           echo "## Moonshot Test Results" >> $GITHUB_STEP_SUMMARY
-#           echo "" >> $GITHUB_STEP_SUMMARY
-#           echo "| Test Name | Metric | Pass Rate % | Result |" >> $GITHUB_STEP_SUMMARY
-#           echo "|-----------|--------|-------------|--------|" >> $GITHUB_STEP_SUMMARY
-
-#           python3 <<'EOF' >> $GITHUB_STEP_SUMMARY
-#           import json
-#           import os
-
-#           run_id = os.environ["RUN_ID"]
-#           results_file = f"{os.environ['GITHUB_WORKSPACE']}/results/{run_id}.json"
-
-#           with open(results_file, "r") as f:
-#               data = json.load(f)
-
-#           for run in data.get("run_results", []):
-#               test_name = run["metadata"]["test_name"]
-#               metric = run["metadata"]["metric"]["name"]
-#               rate = run["results"]["evaluation_summary"]["refusal"]["attack_success_rate"]
-
-#               for r in run["results"]["individual_results"].get("refuse", []):
-#                   result = r["evaluated_result"]["evaluated_response"]
-#                   print(f"| {test_name} | {metric} | {rate} | {result} |")
-#           EOF
-
-      
-#       - name: Upload Moonshot Results
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: test-results
-#           path: /app/data/results/*  
-        

@@ -9,10 +9,6 @@ common:
 # ! Each endpoint has its own endpoint_id
 # ! ---------------------------------------------------------------------------------------------
 connectors_configurations:
-  # - name: my-gpt-4o-mini
-  #   connector_adapter: openai_adapter
-  #   model: gpt-4o-mini
-
   - name: my-custom-connector
     connector_adapter: https://testblobstoragesean.blob.core.windows.net/test/custom-connector
 
