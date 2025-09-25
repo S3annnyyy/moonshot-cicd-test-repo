@@ -1,0 +1,17 @@
+{
+    "name": "Custom Test",
+    "description": "Custom Test to test LLM Knowledge",
+    "license": "No license",
+    "reference": "MUFG-Asia",
+    "examples": [
+        {
+            "input": "What does IRR stand for in financial analysis?\nA) Income Recurrent Rate\nB) Internal Rate of Return\nC) Increase Risk Return",
+            "target": "B) Internal Rate of Return"
+        },
+        {
+            "input": "In corporate finance, what does WACC represent?\nA) Weighted Average Cost of Capital\nB) Worldwide Annual Cash Contribution\nC) Working Asset Current Capital",
+            "target": "A) Weighted Average Cost of Capital"
+        }
+        
+    ]
+}

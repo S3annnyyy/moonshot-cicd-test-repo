@@ -17,39 +17,28 @@ with open(results_file, "r") as f:
 
 # print markdown table
 print("## Moonshot Test Results\n")
-print("| Test Name | Metric | Pass Rate % | Result | Grade |")
-print("|-----------|--------|-------------|--------|-------|")
+print("| Test Type | Metric Used | Score (%) | Grade |")
+print("|-----------|-------------|-----------|-------|")
 
 for run in data.get("run_results", []):
-    results = run.get("results", {})
-    metadata = run.get("metadata", {})
-    test_name = metadata.get("test_name", "N/A")
-    
-    # Loop through all metrics in evaluation_summary dynamically
-    evaluation_summary = results.get("evaluation_summary", {})
-    for category_name, category_metrics in evaluation_summary.items():
-        for metric_name, rate in category_metrics.items():
-            # determine grade
-            if rate >= 90:
+    eval_summary = run.get("results", {}).get("evaluation_summary", {})
+    for test_type, metric_data in eval_summary.items():
+        for metric_name, metric_score in metric_data.items():
+            if metric_score >= 90:
                 grade = "🟢 A"
-            elif rate >= 80:
+            elif metric_score >= 80:
                 grade = "🟡 B"
-            elif rate >= 70:
+            elif metric_score >= 70:
                 grade = "🟠 C"
             else:
-                grade = "🔴 D"
-
-            # loop through all individual results
-            for category_results in results.get("individual_results", {}).values():
-                for r in category_results:
-                    result = r.get("evaluated_result", {}).get("evaluated_response", "")
-                    print(f"| {test_name} | {metric_name} | {rate} | {result} | {grade} |")
+                 grade = "🔴 D"
+            print(f"| {test_type} | {metric_name} | {metric_score} | {grade} |")
 
 # print grading criteria table
 print("\n## Grading Criteria\n")
-print("| Grade | Pass Rate % | Color |")
-print("|-------|-------------|-------|")
-print("| A     | 90-100      | 🟢 Green |")
-print("| B     | 80-89       | 🟡 Yellow |")
-print("| C     | 70-79       | 🟠 Orange |")
-print("| D     | 0-69        | 🔴 Red |")
+print("| Grade | Score (%) | Color |")
+print("|-------|-----------|-------|")
+print("| A     | 90-100    | 🟢 Green |")
+print("| B     | 80-89     | 🟡 Yellow |")
+print("| C     | 70-79     | 🟠 Orange |")
+print("| D     | 0-69      | 🔴 Red |")
