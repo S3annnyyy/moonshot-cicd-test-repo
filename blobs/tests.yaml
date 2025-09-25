@@ -15,7 +15,7 @@ qa-tests:
   #       qns_type: MCQ          
   #   metric: 
   #     name: refusal_adapter
-  
+
   - name: custom-test
     type: benchmark
     dataset: https://testblobstoragesean.blob.core.windows.net/test/custom-test
