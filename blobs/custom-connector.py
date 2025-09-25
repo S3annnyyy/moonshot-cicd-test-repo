@@ -35,13 +35,12 @@ class SampleCustomAdapter(ConnectorPort):
         self.install_requirements()
 
     async def get_response(self, prompt: Any) -> ConnectorResponseEntity:
-        endpoint = "http://localhost:3123/api/v1/conversation"
-        data = {"message": prompt}
+        if self.connector_entity.system_prompt:
+            data = {"message": self.connector_entity.system_prompt + prompt}
+        else:
+             data = {"message": prompt}
 
-        # TODO 4: After preparing the data, send the request to the endpoint. Ensure that you return a
-        # ConnectorResponseEntity object (line 66), and ensure the ConnectorResponseEntity's response field is assigned 
-        # to the response (in string) from what your application returns
-        # Sending the request via httpx is just one way of doing it. There are other ways you can send your requests 
+        endpoint = "http://localhost:3123/api/v1/conversation"
         async with httpx.AsyncClient(timeout=20.0) as client:  # noqa: F821
             try:
                 response = await client.post(endpoint, json=data)
