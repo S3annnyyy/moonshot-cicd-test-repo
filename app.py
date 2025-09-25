@@ -16,7 +16,7 @@ async def conversation():
     data = await request.get_json()
 
     message = data.get('message')
-    return jsonify({"data": "B) Internal Rate of Return"}), 200
+    return jsonify({"data": f"received message: {message}"}), 200
 
 
 if __name__ == "__main__":
