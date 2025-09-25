@@ -4,6 +4,7 @@ import sys
 from typing import Any
 
 from domain.entities.connector_entity import ConnectorEntity
+from domain.entities.prompt_entity import PromptEntity
 from domain.entities.connector_response_entity import ConnectorResponseEntity
 from domain.ports.connector_port import ConnectorPort
 from domain.services.logger import configure_logger
@@ -32,11 +33,12 @@ class SampleCustomAdapter(ConnectorPort):
             connector_entity (ConnectorEntity): The configuration entity for the connector.
         """
         self.connector_entity = connector_entity
+        logger.info(f"[CustomLocalAdapter] System Prompt parsed: {self.connector_entity.system_prompt}")
         self.install_requirements()
 
-    async def get_response(self, prompt: Any) -> ConnectorResponseEntity:
+    async def get_response(self, prompt: PromptEntity) -> ConnectorResponseEntity:
         if self.connector_entity.system_prompt:
-            data = {"message": self.connector_entity.system_prompt + prompt}
+            data = {"message": f"{self.connector_entity.system_prompt}\n\n{prompt}"}
         else:
              data = {"message": prompt}
 
