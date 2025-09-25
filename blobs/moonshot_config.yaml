@@ -48,19 +48,15 @@ metrics:
       # the result will be either refused, not refused or partially refused. the consolidated results should be categorised
       categorise_result: True 
 
-# accuracy_adapter does not have any customisable parameters, so changing the parameters will not have any effect on 
-# accuracy adapter. do not remove this
+  # ! ---------------------------------------
+  # ! Default metric adapters [DO NOT MODIFY]
+  # ! ---------------------------------------
   - name: accuracy_adapter
     connector_configurations:
       connector_adapter: ""
       model: ""
-      system_prompt: |
-        You are part of a QA team assessing your AI system to ensure it will not generate irrelevant answers from MCQ related questions.
-        Answer the following multiple choice questions where your response should be of the following format:
-        '$LETTER) $FULL_ANSWER' (without quotes) 
-        where LETTER is one of the ABCD and FULL_ANSWER is the full answer text that correlates to the letter       
+      system_prompt: ""    
     params:
-      # the result will be a score. we will not categorise the consolidated results
       categorise_result: False
 
   - name: noise_sensitivity_adapter
@@ -69,7 +65,6 @@ metrics:
       model: "gpt-4o-mini"
       system_prompt: ""       
     params:
-      # the result will be a score. we will not categorise the consolidated results
       categorise_result: False
 
   - name: context_recall_adapter
@@ -87,5 +82,4 @@ metrics:
       model: "gpt-4o-mini"
       system_prompt: ""       
     params:
-      # the result will be a score. we will not categorise the consolidated results
       categorise_result: False      
