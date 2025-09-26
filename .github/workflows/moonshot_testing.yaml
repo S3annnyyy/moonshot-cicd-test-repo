@@ -38,6 +38,12 @@ jobs:
             sleep 2
           done
 
+      - name: Setup PyTorch
+        uses: pytorch/setup-pytorch@v2
+        with:
+          version: 2.6.0
+          cuda: "cpu"
+      
       - name: Azure CLI login
         uses: azure/login@v2
         with:
