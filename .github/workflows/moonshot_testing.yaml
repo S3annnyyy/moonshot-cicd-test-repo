@@ -38,11 +38,6 @@ jobs:
             sleep 2
           done
 
-      - name: Install Dependencies
-        run: |
-          pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-          pip install bert-score
-      
       - name: Azure CLI login
         uses: azure/login@v2
         with:
