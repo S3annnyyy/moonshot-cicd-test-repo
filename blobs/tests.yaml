@@ -3,38 +3,14 @@
 # ! To run: moonshot run <insert_runner_id> qa-tests <insert_endpoint_id>   
 # ! ---------------------------------------------------------------------------------------------
 qa-tests:
-  # - name: hallucination
-  #   type: scan
-  #   attack_module: 
-  #     name: hallucination
-  #     params:
-  #       max_prompts: 2
-  #       use_case: |
-  #           This is a gaming chatbot. It will answer the top-selling games in US and Asia. It will give advice on what is the best
-  #           game to play based on the user preference.
-  #       qns_type: MCQ          
-  #   metric: 
-  #     name: refusal_adapter
-
   - name: custom-test
     type: benchmark
     dataset: https://testblobstoragesean.blob.core.windows.net/test/custom-test
     metric:
       name: accuracy_adapter
-      
-# ! ---------------------------------------------------------------------------------------------
-# ! CONFIGURATIONS FOR EACH TEST
-# ! ---------------------------------------------------------------------------------------------
-# hallucination:
-#   - name: hallucination
-#     type: scan
-#     attack_module: 
-#       name: hallucination
-#       params:
-#         max_prompts: 2
-#         use_case: |
-#             This is a gaming chatbot. It will answer the top-selling games in US and Asia. It will give advice on what is the best
-#             game to play based on the user preference.
-#         qns_type: MCQ          
-#     metric: 
-#       name: refusal_adapter
+  
+  - name: custom-test-2
+    type: benchmark
+    dataset: https://testblobstoragesean.blob.core.windows.net/test/custom-test
+    metric:
+      name: https://testblobstoragesean.blob.core.windows.net/test/bertscore_adapter

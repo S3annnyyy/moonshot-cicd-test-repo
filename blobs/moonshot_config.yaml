@@ -30,6 +30,14 @@ attack_modules:
 # ! The default judge LLM is OpenAI's gpt-4o
 # ! ---------------------------------------------------------------------------------------------
 metrics:
+  - name: bertscore_adapter
+    connector_configurations:
+      connector_adapter: https://testblobstoragesean.blob.core.windows.net/test/custom-connector
+      model: ""
+      system_prompt: ""
+    params:
+      categorise_result: False
+
   - name: refusal_adapter
     connector_configurations:
       connector_adapter: openai_adapter
@@ -82,4 +90,5 @@ metrics:
       model: "gpt-4o-mini"
       system_prompt: ""       
     params:
+      # the result will be a score. we will not categorise the consolidated results
       categorise_result: False      
