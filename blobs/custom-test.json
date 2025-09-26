@@ -3,6 +3,7 @@
     "description": "Custom Test to test LLM Knowledge",
     "license": "No license",
     "reference": "MUFG-Asia",
+    "prompt_template": "You are part of a QA team assessing your AI system to ensure it will not generate irrelevant answers from MCQ related questions. Answer the following multiple choice questions where your response should be of the following format: '$LETTER) $FULL_ANSWER' (without quotes) where LETTER is one of the ABCD and FULL_ANSWER is the full answer text that correlates to the letter",
     "examples": [
         {
             "input": "What does IRR stand for in financial analysis?\nA) Income Recurrent Rate\nB) Internal Rate of Return\nC) Increase Risk Return",
@@ -11,6 +12,10 @@
         {
             "input": "In corporate finance, what does WACC represent?\nA) Weighted Average Cost of Capital\nB) Worldwide Annual Cash Contribution\nC) Working Asset Current Capital",
             "target": "A) Weighted Average Cost of Capital"
+        },
+        {
+            "input": "In valuation, what does the DCF method stand for?\nA) Discounted Cash Flow\nB) Deferred Capital Fund\nC) Direct Cost Financing",
+            "target": "A) Discounted Cash Flow"
         }
         
     ]
